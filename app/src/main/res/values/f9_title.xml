@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="f9_title">
+        <item>F90</item>
+        <item>F91</item>
+        <item>F92</item>
+        <item>F93</item>
+        <item>F94</item>
+        <item>F95</item>
+        <item>F98</item>
+        <item>F99</item>
+    </string-array>
+</resources>

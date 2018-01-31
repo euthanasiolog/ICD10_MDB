@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="f1_title">
+        <item>F1x.0</item>
+        <item>F1x.1</item>
+        <item>F1x.2</item>
+        <item>F1x.3</item>
+        <item>F1x.4</item>
+        <item>F1x.5</item>
+        <item>F1x.6</item>
+        <item>F1x.7</item>
+        <item>F1x.9</item>
+    </string-array>
+</resources>
