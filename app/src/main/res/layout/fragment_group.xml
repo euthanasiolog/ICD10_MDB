@@ -2,15 +2,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.dev.piatr.icd10_mbd.ProtocolFragment">
-<ScrollView
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <TextView
-        android:padding="5dp"
+    tools:context="com.dev.piatr.icd_10mdb.GroupFragment">
+
+    <ListView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/protocol_fragment_text" />
-</ScrollView>
+        android:id="@+id/group_list"/>
 
 </FrameLayout>

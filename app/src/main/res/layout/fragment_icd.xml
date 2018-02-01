@@ -5,6 +5,7 @@
     tools:context="com.dev.piatr.icd10_mbd.ICDFragment">
 
         <TextView
+            android:padding="5dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/icd_fragment_text"/>

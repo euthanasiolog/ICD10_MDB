@@ -4,6 +4,7 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -22,14 +23,25 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private final static String KEY_ICD = "key1";
     private final static String KEY_PROTOCOL = "key2";
+    private final static String GROUP_KEY = "group_key";
+    private final static String EXPANDABLE_GROUP_KEY_CHILD = "expandable_group_key_child";
+    private final static String EXPANDABLE_GROUP_KEY_PARENT = "expandable_group_key_parent";
     ICDFragment icdFragment;
     ProtocolFragment protocolFragment;
+    GroupFragment groupFragment;
+    ExpandableGroupFragment expandableGroupFragment;
     FragmentTransaction transaction;
+    Bundle bundleGroupFragment;
     Bundle bundleICD;
+    Bundle expandableGroupFragmentBundle;
     Bundle bundleProtocol;
     String textICD;
     String textProtocol;
     Map<String, String> map;
+    MyFragmentPagerAdapter myFragmentPagerAdapter;
+    private ViewPager viewPager;
+    private final String protocol = "ПРОТОКОЛ ЛЕЧЕНИЯ";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,16 +50,27 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        icdFragment = new ICDFragment();
+
         bundleICD = new Bundle();
         bundleProtocol = new Bundle();
-        textICD = getResources().getString(R.string.icd_title);
+        icdFragment = new ICDFragment();
+        protocolFragment = new ProtocolFragment();
         textProtocol = getResources().getString(R.string.protocol_title);
+        bundleProtocol.putString(KEY_PROTOCOL, textProtocol);
+        protocolFragment.setArguments(bundleProtocol);
+        textICD = getResources().getString(R.string.icd_title);
         bundleICD.putString(KEY_ICD, textICD);
         icdFragment.setArguments(bundleICD);
-        transaction = getFragmentManager().beginTransaction();
-        transaction.add(R.id.container, icdFragment);
-        transaction.commit();
+        myFragmentPagerAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager());
+        myFragmentPagerAdapter.addFragment(icdFragment, "МКБ 10 - введение");
+        myFragmentPagerAdapter.addFragment(protocolFragment, "Клинические протоколы - введение");
+        viewPager = (ViewPager)findViewById(R.id.container);
+        viewPager.setAdapter(myFragmentPagerAdapter);
+
+
+//        transaction = getFragmentManager().beginTransaction();
+//        transaction.add(R.id.container, icdFragment);
+//        transaction.commit();
 
         ArrayList<Map<String, String>> groupDataList = new ArrayList<>();
         String[] f0 = getResources().getStringArray(R.array.f0_title);
@@ -71,7 +94,7 @@ public class MainActivity extends AppCompatActivity
 
         int groupTo[] = new int[]{android.R.id.text1};
 
-        ArrayList<ArrayList<Map<String, String>>> childDataList = new ArrayList<>();
+        final ArrayList<ArrayList<Map<String, String>>> childDataList = new ArrayList<>();
 
         ArrayList<Map<String, String>> childDataItemList = new ArrayList<>();
 
@@ -148,12 +171,48 @@ public class MainActivity extends AppCompatActivity
         String childFrom[] = new String[]{"childName"};
         int[] childTo = new int[]{android.R.id.text1};
 
-        SimpleExpandableListAdapter adapter = new SimpleExpandableListAdapter(this, groupDataList,
+        final SimpleExpandableListAdapter adapter = new SimpleExpandableListAdapter(this, groupDataList,
                 android.R.layout.simple_expandable_list_item_1, groupFrom, groupTo, childDataList,
                 android.R.layout.simple_list_item_1, childFrom, childTo);
 
         ExpandableListView expandableListView = (ExpandableListView) findViewById(R.id.expandable_navigation_menu);
         expandableListView.setAdapter(adapter);
+        expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                ArrayList<Map<String, String>> items = childDataList.get(groupPosition);
+//                map = items.get(childPosition);
+//                String item = map.get("childName");
+
+                map = (HashMap<String, String>) adapter.getChild(groupPosition, childPosition);
+                String selected = map.get("childName");
+                switch (selected){
+                    case "F00 Деменция при болезни Альцгеймера":
+                        String[] parentText = getResources().getStringArray(R.array.f00_title);
+                        String[] childText = getResources().getStringArray(R.array.f00_text);
+                        expandableGroupFragmentBundle = new Bundle();
+                        expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_PARENT, parentText);
+                        expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_CHILD, childText);
+                        expandableGroupFragment = new ExpandableGroupFragment();
+                        expandableGroupFragment.setArguments(expandableGroupFragmentBundle);
+                        bundleProtocol = new Bundle();
+                        bundleProtocol.putString(KEY_PROTOCOL, getResources().getString(R.string.protocol_00));
+                        protocolFragment = new ProtocolFragment();
+                        protocolFragment.setArguments(bundleProtocol);
+//                        transaction = getFragmentManager().beginTransaction();
+//                        transaction.replace(R.id.container, expandableGroupFragment).commit();
+//                        myFragmentPagerAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager());
+                        myFragmentPagerAdapter.addFragment(expandableGroupFragment, "Деменция при б. Альцгеймера");
+
+                        myFragmentPagerAdapter.addFragment(protocolFragment, protocol);
+//                        viewPager = (ViewPager)findViewById(R.id.container);
+                        viewPager.setAdapter(myFragmentPagerAdapter);
+                        break;
+                }
+
+                return true;
+            }
+        });
 
 
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -233,28 +292,33 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public void setIcdFragment(View view){
-        if (!icdFragment.isVisible()){
-            bundleICD.putString(KEY_ICD, textICD);
-            icdFragment.setArguments(bundleICD);
-            transaction = getFragmentManager().beginTransaction();
-            transaction.replace(R.id.container, icdFragment).commit();
-        }
+//    public void setIcdFragment(View view){
+//        if (!icdFragment.isVisible()){
+//            bundleICD.putString(KEY_ICD, textICD);
+//            icdFragment.setArguments(bundleICD);
+//            transaction = getFragmentManager().beginTransaction();
+//            transaction.replace(R.id.container, icdFragment).commit();
+//        }
+//    }
+//
+//    public void setProtocolFragment(View view){
+//            if (protocolFragment == null) {
+//                protocolFragment = new ProtocolFragment();
+//                bundleProtocol.putString(KEY_PROTOCOL, textProtocol);
+//                protocolFragment.setArguments(bundleProtocol);
+//                transaction = getFragmentManager().beginTransaction();
+//                transaction.replace(R.id.container, protocolFragment).commit();
+//            } else {if (!protocolFragment.isVisible()) {
+//                bundleProtocol.putString(KEY_PROTOCOL, textProtocol);
+//                protocolFragment.setArguments(bundleProtocol);
+//                transaction = getFragmentManager().beginTransaction();
+//                transaction.replace(R.id.container, protocolFragment).commit();
+//            }
+//            }
+//    }
+
+    public void navigationOnItemClickListener(int group, int child){
+
     }
 
-    public void setProtocolFragment(View view){
-            if (protocolFragment == null) {
-                protocolFragment = new ProtocolFragment();
-                bundleProtocol.putString(KEY_PROTOCOL, textProtocol);
-                protocolFragment.setArguments(bundleProtocol);
-                transaction = getFragmentManager().beginTransaction();
-                transaction.replace(R.id.container, protocolFragment).commit();
-            } else {if (!protocolFragment.isVisible()) {
-                bundleProtocol.putString(KEY_PROTOCOL, textProtocol);
-                protocolFragment.setArguments(bundleProtocol);
-                transaction = getFragmentManager().beginTransaction();
-                transaction.replace(R.id.container, protocolFragment).commit();
-            }
-            }
-    }
 }

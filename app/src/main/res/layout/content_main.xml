@@ -2,42 +2,52 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_content_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.dev.piatr.icd10_mbd.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <FrameLayout
-        android:id="@+id/container"
+    <android.support.v4.view.ViewPager
         android:layout_width="match_parent"
-        android:layout_height="460dp"
-        android:layout_alignParentTop="true"
-        />
+        android:layout_height="match_parent"
+        android:id="@+id/container">
+        <android.support.v4.view.PagerTabStrip
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:foregroundGravity="bottom"/>
+    </android.support.v4.view.ViewPager>
 
-    <Button
-        android:id="@+id/ICD_button"
-        android:text="МКБ 10"
-        android:layout_margin="5dp"
-        android:layout_marginBottom="2dp"
-        android:layout_width="185dp"
-        android:layout_height="60dp"
-        android:layout_below="@id/container"
-        android:onClick="setIcdFragment" />
+    <!--<FrameLayout-->
+        <!--android:id="@+id/container"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="460dp"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--/>-->
+
+    <!--<Button-->
+        <!--android:id="@+id/ICD_button"-->
+        <!--android:text="МКБ 10"-->
+        <!--android:layout_margin="5dp"-->
+        <!--android:layout_marginBottom="2dp"-->
+        <!--android:layout_width="185dp"-->
+        <!--android:layout_height="60dp"-->
+        <!--android:layout_below="@id/container"-->
+        <!--android:onClick="setIcdFragment" />-->
 
 
 
 
-    <Button
-        android:id="@+id/protocol_button"
-        android:text="Клинические протоколы"
-        android:layout_margin="5dp"
-        android:layout_marginBottom="2dp"
-        android:layout_width="185dp"
-        android:layout_height="60dp"
-        android:layout_below="@id/container"
-        android:layout_toRightOf="@id/ICD_button"
-        android:onClick="setProtocolFragment"/>
+    <!--<Button-->
+        <!--android:id="@+id/protocol_button"-->
+        <!--android:text="Клинические протоколы"-->
+        <!--android:layout_margin="5dp"-->
+        <!--android:layout_marginBottom="2dp"-->
+        <!--android:layout_width="185dp"-->
+        <!--android:layout_height="60dp"-->
+        <!--android:layout_below="@id/container"-->
+        <!--android:layout_toRightOf="@id/ICD_button"-->
+        <!--android:onClick="setProtocolFragment"/>-->
 
 
 </RelativeLayout>
