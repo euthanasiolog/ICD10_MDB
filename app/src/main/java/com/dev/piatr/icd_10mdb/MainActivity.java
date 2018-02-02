@@ -1,6 +1,5 @@
 package com.dev.piatr.icd_10mdb;
 
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -23,15 +22,11 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private final static String KEY_ICD = "key1";
     private final static String KEY_PROTOCOL = "key2";
-    private final static String GROUP_KEY = "group_key";
     private final static String EXPANDABLE_GROUP_KEY_CHILD = "expandable_group_key_child";
     private final static String EXPANDABLE_GROUP_KEY_PARENT = "expandable_group_key_parent";
     ICDFragment icdFragment;
     ProtocolFragment protocolFragment;
-    GroupFragment groupFragment;
     ExpandableGroupFragment expandableGroupFragment;
-    FragmentTransaction transaction;
-    Bundle bundleGroupFragment;
     Bundle bundleICD;
     Bundle expandableGroupFragmentBundle;
     Bundle bundleProtocol;
@@ -40,7 +35,6 @@ public class MainActivity extends AppCompatActivity
     Map<String, String> map;
     MyFragmentPagerAdapter myFragmentPagerAdapter;
     private ViewPager viewPager;
-    private final String protocol = "ПРОТОКОЛ ЛЕЧЕНИЯ";
 
 
     @Override
@@ -68,21 +62,9 @@ public class MainActivity extends AppCompatActivity
         viewPager.setAdapter(myFragmentPagerAdapter);
 
 
-//        transaction = getFragmentManager().beginTransaction();
-//        transaction.add(R.id.container, icdFragment);
-//        transaction.commit();
 
         ArrayList<Map<String, String>> groupDataList = new ArrayList<>();
-        String[] f0 = getResources().getStringArray(R.array.f0_title);
-        String[] f1 = getResources().getStringArray(R.array.f1_title);
-        String[] f2 = getResources().getStringArray(R.array.f2_title);
-        String[] f3 = getResources().getStringArray(R.array.f3_title);
-        String[] f4 = getResources().getStringArray(R.array.f4_title);
-        String[] f5 = getResources().getStringArray(R.array.f5_title);
-        String[] f6 = getResources().getStringArray(R.array.f6_title);
-        String[] f7 = getResources().getStringArray(R.array.f7_title);
-        String[] f8 = getResources().getStringArray(R.array.f8_title);
-        String[] f9 = getResources().getStringArray(R.array.f9_title);
+
         String[] groupTitle = getResources().getStringArray(R.array.f0_f9_title);
         for (String group:groupTitle){
             map = new HashMap<>();
@@ -90,83 +72,13 @@ public class MainActivity extends AppCompatActivity
             groupDataList.add(map);
         }
 
-        String groupFrom[] = new String[]{"groupName"};
-
-        int groupTo[] = new int[]{android.R.id.text1};
-
         final ArrayList<ArrayList<Map<String, String>>> childDataList = new ArrayList<>();
 
         ArrayList<Map<String, String>> childDataItemList = new ArrayList<>();
+        setNavigationMenuData(childDataList, childDataItemList);
 
-        for (String child:f0){
-            map = new HashMap<>();
-            map.put("childName", child);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f1){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f2){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f3){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f4){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f5){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f6){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f7){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f8){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f9){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
+        String groupFrom[] = new String[]{"groupName"};
+        int groupTo[] = new int[]{android.R.id.text1};
 
         String childFrom[] = new String[]{"childName"};
         int[] childTo = new int[]{android.R.id.text1};
@@ -180,36 +92,7 @@ public class MainActivity extends AppCompatActivity
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                ArrayList<Map<String, String>> items = childDataList.get(groupPosition);
-//                map = items.get(childPosition);
-//                String item = map.get("childName");
-
-                map = (HashMap<String, String>) adapter.getChild(groupPosition, childPosition);
-                String selected = map.get("childName");
-                switch (selected){
-                    case "F00 Деменция при болезни Альцгеймера":
-                        String[] parentText = getResources().getStringArray(R.array.f00_title);
-                        String[] childText = getResources().getStringArray(R.array.f00_text);
-                        expandableGroupFragmentBundle = new Bundle();
-                        expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_PARENT, parentText);
-                        expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_CHILD, childText);
-                        expandableGroupFragment = new ExpandableGroupFragment();
-                        expandableGroupFragment.setArguments(expandableGroupFragmentBundle);
-                        bundleProtocol = new Bundle();
-                        bundleProtocol.putString(KEY_PROTOCOL, getResources().getString(R.string.protocol_00));
-                        protocolFragment = new ProtocolFragment();
-                        protocolFragment.setArguments(bundleProtocol);
-//                        transaction = getFragmentManager().beginTransaction();
-//                        transaction.replace(R.id.container, expandableGroupFragment).commit();
-//                        myFragmentPagerAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager());
-                        myFragmentPagerAdapter.addFragment(expandableGroupFragment, "Деменция при б. Альцгеймера");
-
-                        myFragmentPagerAdapter.addFragment(protocolFragment, protocol);
-//                        viewPager = (ViewPager)findViewById(R.id.container);
-                        viewPager.setAdapter(myFragmentPagerAdapter);
-                        break;
-                }
-
+               navigationMenuSwitcher(groupPosition, childPosition);
                 return true;
             }
         });
@@ -292,33 +175,117 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-//    public void setIcdFragment(View view){
-//        if (!icdFragment.isVisible()){
-//            bundleICD.putString(KEY_ICD, textICD);
-//            icdFragment.setArguments(bundleICD);
-//            transaction = getFragmentManager().beginTransaction();
-//            transaction.replace(R.id.container, icdFragment).commit();
-//        }
-//    }
-//
-//    public void setProtocolFragment(View view){
-//            if (protocolFragment == null) {
-//                protocolFragment = new ProtocolFragment();
-//                bundleProtocol.putString(KEY_PROTOCOL, textProtocol);
-//                protocolFragment.setArguments(bundleProtocol);
-//                transaction = getFragmentManager().beginTransaction();
-//                transaction.replace(R.id.container, protocolFragment).commit();
-//            } else {if (!protocolFragment.isVisible()) {
-//                bundleProtocol.putString(KEY_PROTOCOL, textProtocol);
-//                protocolFragment.setArguments(bundleProtocol);
-//                transaction = getFragmentManager().beginTransaction();
-//                transaction.replace(R.id.container, protocolFragment).commit();
-//            }
-//            }
-//    }
-
     public void navigationOnItemClickListener(int group, int child){
 
+    }
+
+    private void navigationMenuSwitcher (int groupPosition, int childPosition){
+        switch (groupPosition){
+            case 0:
+                switch (childPosition){
+                    case 0:
+                        String[] parentText = getResources().getStringArray(R.array.f00_title);
+                        String[] childText = getResources().getStringArray(R.array.f00_text);
+                        expandableGroupFragmentBundle = new Bundle();
+                        expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_PARENT, parentText);
+                        expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_CHILD, childText);
+                        expandableGroupFragment = new ExpandableGroupFragment();
+                        expandableGroupFragment.setArguments(expandableGroupFragmentBundle);
+                        bundleProtocol = new Bundle();
+                        bundleProtocol.putString(KEY_PROTOCOL, getResources().getString(R.string.protocol_00));
+                        protocolFragment = new ProtocolFragment();
+                        protocolFragment.setArguments(bundleProtocol);
+                        myFragmentPagerAdapter.addFragment(expandableGroupFragment, "Деменция при б. Альцгеймера");
+                        String protocol = "ПРОТОКОЛ ЛЕЧЕНИЯ";
+                        myFragmentPagerAdapter.addFragment(protocolFragment, protocol);
+                        viewPager.setAdapter(myFragmentPagerAdapter);
+                        break;
+                }
+        }
+    }
+
+    private void setNavigationMenuData(ArrayList<ArrayList<Map<String, String>>> childDataList,
+                                       ArrayList<Map<String, String>> childDataItemList){
+        String[] f0 = getResources().getStringArray(R.array.f0_title);
+        String[] f1 = getResources().getStringArray(R.array.f1_title);
+        String[] f2 = getResources().getStringArray(R.array.f2_title);
+        String[] f3 = getResources().getStringArray(R.array.f3_title);
+        String[] f4 = getResources().getStringArray(R.array.f4_title);
+        String[] f5 = getResources().getStringArray(R.array.f5_title);
+        String[] f6 = getResources().getStringArray(R.array.f6_title);
+        String[] f7 = getResources().getStringArray(R.array.f7_title);
+        String[] f8 = getResources().getStringArray(R.array.f8_title);
+        String[] f9 = getResources().getStringArray(R.array.f9_title);
+
+        for (String child:f0){
+            map = new HashMap<>();
+            map.put("childName", child);
+            childDataItemList.add(map);
+        }
+        childDataList.add(childDataItemList);
+        childDataItemList = new ArrayList<>();
+        for (String s:f1){
+            map = new HashMap<>();
+            map.put("childName", s);
+            childDataItemList.add(map);
+        }
+        childDataList.add(childDataItemList);
+        childDataItemList = new ArrayList<>();
+        for (String s:f2){
+            map = new HashMap<>();
+            map.put("childName", s);
+            childDataItemList.add(map);
+        }
+        childDataList.add(childDataItemList);
+        childDataItemList = new ArrayList<>();
+        for (String s:f3){
+            map = new HashMap<>();
+            map.put("childName", s);
+            childDataItemList.add(map);
+        }
+        childDataList.add(childDataItemList);
+        childDataItemList = new ArrayList<>();
+        for (String s:f4){
+            map = new HashMap<>();
+            map.put("childName", s);
+            childDataItemList.add(map);
+        }
+        childDataList.add(childDataItemList);
+        childDataItemList = new ArrayList<>();
+        for (String s:f5){
+            map = new HashMap<>();
+            map.put("childName", s);
+            childDataItemList.add(map);
+        }
+        childDataList.add(childDataItemList);
+        childDataItemList = new ArrayList<>();
+        for (String s:f6){
+            map = new HashMap<>();
+            map.put("childName", s);
+            childDataItemList.add(map);
+        }
+        childDataList.add(childDataItemList);
+        childDataItemList = new ArrayList<>();
+        for (String s:f7){
+            map = new HashMap<>();
+            map.put("childName", s);
+            childDataItemList.add(map);
+        }
+        childDataList.add(childDataItemList);
+        childDataItemList = new ArrayList<>();
+        for (String s:f8){
+            map = new HashMap<>();
+            map.put("childName", s);
+            childDataItemList.add(map);
+        }
+        childDataList.add(childDataItemList);
+        childDataItemList = new ArrayList<>();
+        for (String s:f9){
+            map = new HashMap<>();
+            map.put("childName", s);
+            childDataItemList.add(map);
+        }
+        childDataList.add(childDataItemList);
     }
 
 }
