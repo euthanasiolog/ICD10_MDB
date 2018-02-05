@@ -1,50 +1,65 @@
 package com.dev.piatr.icd_10mdb;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, LoaderManager.LoaderCallbacks<Cursor> {
     private final static String KEY_ICD = "key1";
     private final static String KEY_PROTOCOL = "key2";
     private final static String EXPANDABLE_GROUP_KEY_CHILD = "expandable_group_key_child";
     private final static String EXPANDABLE_GROUP_KEY_PARENT = "expandable_group_key_parent";
     ICDFragment icdFragment;
     ProtocolFragment protocolFragment;
-    ExpandableGroupFragment expandableGroupFragment;
     Bundle bundleICD;
-    Bundle expandableGroupFragmentBundle;
     Bundle bundleProtocol;
     String textICD;
     String textProtocol;
     Map<String, String> map;
     MyFragmentPagerAdapter myFragmentPagerAdapter;
     private ViewPager viewPager;
+    private DB db;
+    private ContentAdapter contentAdapter;
+    ArrayList<Map<String, String>> commentList;
+    ArrayList<Map<String, Integer>> favoriteList;
+    private int isFavorite;
+    private String comment;
+    private String actualTitle;
+    private ArrayList<String> favorites;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-
+        contentAdapter = new ContentAdapter(commentList, favoriteList);
+        db = new DB(this);
+        db.openConnection();
         bundleICD = new Bundle();
         bundleProtocol = new Bundle();
         icdFragment = new ICDFragment();
@@ -60,7 +75,18 @@ public class MainActivity extends AppCompatActivity
         myFragmentPagerAdapter.addFragment(protocolFragment, "Клинические протоколы - введение");
         viewPager = (ViewPager)findViewById(R.id.container);
         viewPager.setAdapter(myFragmentPagerAdapter);
+        getSupportLoaderManager().initLoader(0, null, this);
+        actualTitle = "main";
+        favorites = db.getFavorites();
+        isFavorite = 0;
+        for (String s :favorites){
+            if (actualTitle.equals(s))
+                isFavorite=1;
+        }
 
+
+        commentList = contentAdapter.getCommentsFromDB(db);
+        favoriteList = contentAdapter.getFavoritesFromDB(db);
 
 
         ArrayList<Map<String, String>> groupDataList = new ArrayList<>();
@@ -75,7 +101,7 @@ public class MainActivity extends AppCompatActivity
         final ArrayList<ArrayList<Map<String, String>>> childDataList = new ArrayList<>();
 
         ArrayList<Map<String, String>> childDataItemList = new ArrayList<>();
-        setNavigationMenuData(childDataList, childDataItemList);
+        contentAdapter.setNavigationMenuData(this, childDataList, childDataItemList);
 
         String groupFrom[] = new String[]{"groupName"};
         int groupTo[] = new int[]{android.R.id.text1};
@@ -92,21 +118,27 @@ public class MainActivity extends AppCompatActivity
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-               navigationMenuSwitcher(groupPosition, childPosition);
+               ExpandableListAdapter adapter1 = parent.getExpandableListAdapter();
+               map = (Map<String, String>) adapter1.getChild(groupPosition, childPosition);
+               String title = map.get("childName");
+               actualTitle = title;
+               for (String s :favorites){
+                   if (actualTitle.equals(s))
+                       isFavorite=1;
+               }
+               for (Map<String, String> map:commentList){
+                   if (map.get(title)!=null){
+                       comment=map.get(title);
+                   }else comment = null;
+                }
+                contentAdapter.navigationMenuSwitcher(v.getContext(), myFragmentPagerAdapter, viewPager,
+                        groupPosition, childPosition, title);
                 return true;
             }
         });
 
-
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -114,8 +146,6 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override
@@ -130,162 +160,135 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        if (isFavorite==0){
+            menu.findItem(R.id.delete_favorite).setVisible(false);
+        } else menu.findItem(R.id.delete_favorite).setVisible(true);
+        if (comment==null){
+            menu.findItem(R.id.delete_comment).setVisible(false);
+        }else menu.findItem(R.id.delete_comment).setVisible(true);
+        return true;
+    }
+
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        if (isFavorite==0){
+            menu.findItem(R.id.delete_favorite).setVisible(false);
+        } else {
+            menu.findItem(R.id.delete_favorite).setVisible(true);
+            menu.findItem(R.id.add_favorite).setVisible(false);
+        }
+         if (comment==null){
+            menu.findItem(R.id.delete_comment).setVisible(false);
+        }else menu.findItem(R.id.delete_comment).setVisible(true);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.info) {
+
             return true;
+        }
+        else if (id == R.id.save) {
+
+            return true;
+        }
+
+        else if (id == R.id.share){
+
+            return true;
+        }
+
+        else if (id == R.id.add_comment){
+            Intent intent = new Intent(this, CommentActivity.class);
+            if (actualTitle!=null){
+                intent.putExtra("title", actualTitle);
+                commentList = contentAdapter.getCommentsFromDB(db);
+                if (commentList.size()!=0){
+                for (Map<String, String> map:commentList) {
+                    if (map.get(actualTitle) != null)
+                        intent.putExtra("comment", map.get(actualTitle));
+                } startActivity(intent);
+                return true;
+                }else
+                    startActivity(intent);
+                    return true;
+                }
+            }
+
+        else if (id == R.id.add_favorite){
+            if (actualTitle!=null)
+            db.addFavorite(actualTitle);
+            isFavorite=1;
+            favorites = db.getFavorites();
+            return true;
+        }
+
+        else if (id == R.id.delete_favorite){
+            if (actualTitle!=null)
+            db.deleteFavorite(actualTitle);
+            isFavorite=0;
+            favorites = db.getFavorites();
+            return true;
+        }
+
+        else if (id == R.id.delete_comment){
+            if (actualTitle!=null)
+            db.deleteComment(actualTitle);
+            return true;
+        }
+
+        else if (id == R.id.show_favorites){
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            String[] f = favorites.toArray(new String[0]);
+            builder.setTitle("ИЗБРАННОЕ:").setItems(f, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+               builder.create().show();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
-
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    public void navigationOnItemClickListener(int group, int child){
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        db.closeConnection();
     }
 
-    private void navigationMenuSwitcher (int groupPosition, int childPosition){
-        switch (groupPosition){
-            case 0:
-                switch (childPosition){
-                    case 0:
-                        String[] parentText = getResources().getStringArray(R.array.f00_title);
-                        String[] childText = getResources().getStringArray(R.array.f00_text);
-                        expandableGroupFragmentBundle = new Bundle();
-                        expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_PARENT, parentText);
-                        expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_CHILD, childText);
-                        expandableGroupFragment = new ExpandableGroupFragment();
-                        expandableGroupFragment.setArguments(expandableGroupFragmentBundle);
-                        bundleProtocol = new Bundle();
-                        bundleProtocol.putString(KEY_PROTOCOL, getResources().getString(R.string.protocol_00));
-                        protocolFragment = new ProtocolFragment();
-                        protocolFragment.setArguments(bundleProtocol);
-                        myFragmentPagerAdapter.addFragment(expandableGroupFragment, "Деменция при б. Альцгеймера");
-                        String protocol = "ПРОТОКОЛ ЛЕЧЕНИЯ";
-                        myFragmentPagerAdapter.addFragment(protocolFragment, protocol);
-                        viewPager.setAdapter(myFragmentPagerAdapter);
-                        break;
-                }
-        }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new MyCursorLoader(this, db);
     }
 
-    private void setNavigationMenuData(ArrayList<ArrayList<Map<String, String>>> childDataList,
-                                       ArrayList<Map<String, String>> childDataItemList){
-        String[] f0 = getResources().getStringArray(R.array.f0_title);
-        String[] f1 = getResources().getStringArray(R.array.f1_title);
-        String[] f2 = getResources().getStringArray(R.array.f2_title);
-        String[] f3 = getResources().getStringArray(R.array.f3_title);
-        String[] f4 = getResources().getStringArray(R.array.f4_title);
-        String[] f5 = getResources().getStringArray(R.array.f5_title);
-        String[] f6 = getResources().getStringArray(R.array.f6_title);
-        String[] f7 = getResources().getStringArray(R.array.f7_title);
-        String[] f8 = getResources().getStringArray(R.array.f8_title);
-        String[] f9 = getResources().getStringArray(R.array.f9_title);
-
-        for (String child:f0){
-            map = new HashMap<>();
-            map.put("childName", child);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f1){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f2){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f3){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f4){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f5){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f6){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f7){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f8){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
-        childDataItemList = new ArrayList<>();
-        for (String s:f9){
-            map = new HashMap<>();
-            map.put("childName", s);
-            childDataItemList.add(map);
-        }
-        childDataList.add(childDataItemList);
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
     }
 
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+    }
 }

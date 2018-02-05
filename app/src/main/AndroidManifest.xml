@@ -19,6 +19,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".CommentActivity" />
+        <activity android:name=".RedactCommentActivity" />
+
+        <service
+            android:name=".SavingService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

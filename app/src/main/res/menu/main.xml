@@ -1,9 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:id="@+id/info"
+        android:title="О программе"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/add_comment"
+        android:title="Создать заметку"
+        android:icon="@drawable/ic_create_black_24dp"
+        app:showAsAction="always"
+        />
+
+    <item
+        android:id="@+id/share"
+        android:icon="@drawable/ic_menu_share"
+        android:title="Поделиться"
+        app:showAsAction="collapseActionView"
+        />
+    <item
+        android:id="@+id/save"
+        android:icon="@drawable/ic_save"
+        android:title="Сохранить"
+        app:showAsAction="always"
+        />
+
+    <item
+        android:id="@+id/add_favorite"
+        android:title="Добавить в избранное"
+        app:showAsAction="collapseActionView"
+        />
+
+    <item
+        android:id="@+id/delete_favorite"
+        android:title="Удалить из избранного"
+        app:showAsAction="collapseActionView"/>
+
+    <item
+        android:id="@+id/delete_comment"
+        android:title="Удалить заметку"
+        app:showAsAction="collapseActionView"/>
+
+    <item
+        android:id="@+id/show_favorites"
+        android:title="Показать избранное"
+        app:showAsAction="collapseActionView"
+        />
+
 </menu>
