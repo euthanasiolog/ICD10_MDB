@@ -65,6 +65,8 @@ public class ContentAdapter {
         }return favoritesList;
     }
 
+
+
     public void navigationMenuSwitcher (Context context, MyFragmentPagerAdapter myFragmentPagerAdapter,
                                          ViewPager viewPager, int groupPosition, int childPosition, String title){
         String[] parentText;

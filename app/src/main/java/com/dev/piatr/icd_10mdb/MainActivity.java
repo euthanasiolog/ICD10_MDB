@@ -177,6 +177,7 @@ public class MainActivity extends AppCompatActivity
         super.onPrepareOptionsMenu(menu);
         if (isFavorite==0){
             menu.findItem(R.id.delete_favorite).setVisible(false);
+            menu.findItem(R.id.add_favorite).setVisible(true);
         } else {
             menu.findItem(R.id.delete_favorite).setVisible(true);
             menu.findItem(R.id.add_favorite).setVisible(false);
