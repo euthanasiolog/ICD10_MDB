@@ -67,20 +67,43 @@ public class ContentAdapter {
 
     public void navigationMenuSwitcher (Context context, MyFragmentPagerAdapter myFragmentPagerAdapter,
                                          ViewPager viewPager, int groupPosition, int childPosition, String title){
+        String[] parentText;
+        String[] childText;
+        Bundle expandableGroupFragmentBundle;
+        Bundle bundleProtocol;
+        ExpandableGroupFragment expandableGroupFragment;
+        ProtocolFragment protocolFragment;
         switch (groupPosition){
             case 0:
                 switch (childPosition){
                     case 0:
-                        String[] parentText = context.getResources().getStringArray(R.array.f00_title);
-                        String[] childText = context.getResources().getStringArray(R.array.f00_text);
-                        Bundle expandableGroupFragmentBundle = new Bundle();
+                        parentText = context.getResources().getStringArray(R.array.f00_title);
+                        childText = context.getResources().getStringArray(R.array.f00_text);
+                        expandableGroupFragmentBundle = new Bundle();
                         expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_PARENT, parentText);
                         expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_CHILD, childText);
-                        ExpandableGroupFragment expandableGroupFragment = new ExpandableGroupFragment();
+                        expandableGroupFragment = new ExpandableGroupFragment();
                         expandableGroupFragment.setArguments(expandableGroupFragmentBundle);
-                        Bundle bundleProtocol = new Bundle();
+                        bundleProtocol = new Bundle();
                         bundleProtocol.putString(KEY_PROTOCOL, context.getResources().getString(R.string.protocol_00));
-                        ProtocolFragment protocolFragment = new ProtocolFragment();
+                        protocolFragment = new ProtocolFragment();
+                        protocolFragment.setArguments(bundleProtocol);
+                        myFragmentPagerAdapter.addFragment(expandableGroupFragment, title);
+                        myFragmentPagerAdapter.addFragment(protocolFragment, protocol);
+                        viewPager.setAdapter(myFragmentPagerAdapter);
+                        break;
+
+                    case 1:
+                        parentText = context.getResources().getStringArray(R.array.f01_title);
+                        childText = context.getResources().getStringArray(R.array.f01_text);
+                        expandableGroupFragmentBundle = new Bundle();
+                        expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_PARENT, parentText);
+                        expandableGroupFragmentBundle.putStringArray(EXPANDABLE_GROUP_KEY_CHILD, childText);
+                        expandableGroupFragment = new ExpandableGroupFragment();
+                        expandableGroupFragment.setArguments(expandableGroupFragmentBundle);
+                        bundleProtocol = new Bundle();
+                        bundleProtocol.putString(KEY_PROTOCOL, context.getResources().getString(R.string.f01_protocol));
+                        protocolFragment = new ProtocolFragment();
                         protocolFragment.setArguments(bundleProtocol);
                         myFragmentPagerAdapter.addFragment(expandableGroupFragment, title);
                         myFragmentPagerAdapter.addFragment(protocolFragment, protocol);

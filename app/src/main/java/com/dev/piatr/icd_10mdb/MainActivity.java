@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -200,8 +201,14 @@ public class MainActivity extends AppCompatActivity
         }
 
         else if (id == R.id.share){
-
-            return true;
+//            TextView textView = (TextView) viewPager.getChildAt(viewPager.getCurrentItem());
+//            String s = "";
+//            Intent sendIntent = new Intent();
+//            sendIntent.setAction(Intent.ACTION_SEND);
+//            sendIntent.putExtra(Intent.EXTRA_TEXT, s);
+//            sendIntent.setType("text/plain");
+//            startActivity(sendIntent);
+//            return true;
         }
 
         else if (id == R.id.add_comment){
